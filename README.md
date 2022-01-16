@@ -1,5 +1,5 @@
 # CSS2RSS
-scrapper post-process script for RSSGuard
+scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssguard )
 
 arguments - each is a CSS selector ( https://www.w3schools.com/cssref/css_selectors.asp ): 
 1) item
