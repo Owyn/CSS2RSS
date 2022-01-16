@@ -7,6 +7,8 @@ arguments - each is a CSS selector ( https://www.w3schools.com/cssref/css_select
 3) item description (optional - else would use all the text from item as title)
 4) item link (optional - else would use 1st found link in the item (or the item itself if it's a link))
 
+if no item would be found - a feed item would be generated with the html dump of the whole page so you could see what could be wrong (e.g. - cloudflare block page)
+
 
 ![image](https://user-images.githubusercontent.com/1309656/149637122-fa7e5a86-ac34-4d10-96b7-b97f22a704f5.png)
 
