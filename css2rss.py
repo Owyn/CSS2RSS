@@ -26,14 +26,14 @@ if len(found_items) != 0:
     if len(sys.argv) > 2 and sys.argv[2] != '':
       item_title = json.dumps(item.select(sys.argv[2])[0].text)
     else:
-      item_title = item.text # use all the text inside
+      item_title = json.dumps(item.text) # use all the text inside
 
     #print(item_title)
 
     if len(sys.argv) > 3 and sys.argv[3] != '':
       item_description = json.dumps(str(item.select(sys.argv[3])[0])) # keep html
     else:
-      item_description = item
+      item_description = json.dumps(str(item))
 
     #print(item_description)
 
