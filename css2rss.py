@@ -24,7 +24,10 @@ if len(found_items) != 0:
     #print(item)
 
     if len(sys.argv) > 2 and sys.argv[2] != '':
-      item_title = json.dumps(item.select(sys.argv[2])[0].text)
+      if len(sys.argv) > 5 and sys.argv[5] != '':
+        item_title = json.dumps(item.select(sys.argv[2])[0].text + " - " + item.select(sys.argv[5])[0].text)
+      else:
+        item_title = json.dumps(item.select(sys.argv[2])[0].text)
     else:
       item_title = json.dumps(item.text) # use all the text inside
 
