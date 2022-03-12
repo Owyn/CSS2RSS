@@ -22,21 +22,21 @@ found_items = soup.select(sys.argv[1])
 if len(found_items) != 0:
   for item in found_items:
 
-    if len(sys.argv) > 2 and sys.argv[2] != '':
-      if len(sys.argv) > 5 and sys.argv[5] != '':
-        item_title = json.dumps(item.select(sys.argv[2])[0].text + " - " + item.select(sys.argv[5])[0].text)
+    if len(sys.argv) > 2 and sys.argv[2] != '' and len(main_title := item.select(sys.argv[2])) != 0:
+      if len(sys.argv) > 5 and sys.argv[5] != '' and len((addon_title := item.select(sys.argv[5]))) != 0:
+        item_title = json.dumps(main_title[0].text + " - " + addon_title[0].text)
       else:
-        item_title = json.dumps(item.select(sys.argv[2])[0].text)
+        item_title = json.dumps(main_title[0].text)
     else:
       item_title = json.dumps(item.text) # use all the text inside
 
-    if len(sys.argv) > 3 and sys.argv[3] != '':
-      item_description = json.dumps(str(item.select(sys.argv[3])[0])) # keep html
+    if len(sys.argv) > 3 and sys.argv[3] != '' and len(tDescr := item.select(sys.argv[3])) != 0:
+      item_description = json.dumps(str(tDescr[0])) # keep html
     else:
       item_description = json.dumps(str(item))
 
-    if len(sys.argv) > 4 and sys.argv[4] != '':
-      item_link = json.dumps(item.select(sys.argv[4])[0]['href'])
+    if len(sys.argv) > 4 and sys.argv[4] != '' and len(tLink := item.select(sys.argv[4])) != 0:
+      item_link = json.dumps(tLink[0]['href'])
     else:
       item_link = json.dumps(item['href']) if item.name == "a" else json.dumps(item.find("a")['href']) # 1st link or the item itself if it is a link
 
