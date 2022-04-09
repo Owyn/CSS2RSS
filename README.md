@@ -26,3 +26,43 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 2) Put css2rss.py into your `data4` folder (so you can call the script with just `python css2rss.py`, else you'd need to specify full path to the `.py` file)
 
 ![data4](https://user-images.githubusercontent.com/1309656/162590050-0c6d4d9d-4c57-4123-9959-06a83f0af61b.jpg)
+
+# Examples
+
+ ## *  
+- a simple link makeover into an rss feed (right-clicked a link -> inspect element -> use its CSS selector):  
+
+url: `https://www.foxnews.com/media`  
+script: `python css2rss.py ".title > a"` (link `a` right inside an element with `title` class
+![](https://user-images.githubusercontent.com/1309656/162590533-dcc261f4-3a24-4c59-9e24-60d312a4e3ec.jpg)
+![](https://user-images.githubusercontent.com/1309656/162590684-c452b64f-7916-43e1-b440-3889b2d6a82c.jpg)
+![](https://user-images.githubusercontent.com/1309656/162590622-66bf2f9e-e2cb-4434-a377-3ebdcc573f20.jpg)
+
+ ## *  
+- the reason for implementing static titles  
+
+url: `https://kumascans.com/manga/sokushi-cheat-ga-saikyou-sugite-isekai-no-yatsura-ga-marude-aite-ni-naranai-n-desu-ga/`  
+script: `python css2rss.py ".eph-num > a" "!Sokushi Cheat" ".chapterdate" ~ ".chapternum"`
+
+![](https://user-images.githubusercontent.com/1309656/162590790-1995cd7e-ea6f-41b5-a24c-cb669de851d2.jpg)
+![](https://user-images.githubusercontent.com/1309656/162590821-d3388846-fb47-41e4-866a-5aaa3754d022.jpg)
+
+ ## *  
+- the reason for implementing searching multiple links inside one item  
+
+url: `https://www.asurascans.com/`  
+script: `python css2rss.py "@.uta" "h4" img "li > a" "li > a"`
+
+![](https://user-images.githubusercontent.com/1309656/162590919-4374ba05-9c1f-4f39-b27c-f723d4afda1f.jpg)
+![](https://user-images.githubusercontent.com/1309656/162590934-4c28c614-7548-4048-b147-b7a5b036a842.jpg)
+
+ ## *  
+url: `https://reader.kireicake.com/`  
+script: `python css2rss.py @.group a[href*='/series/'] .meta_r ".element > .title a" ".element > .title a"`
+
+![](https://user-images.githubusercontent.com/1309656/162591038-3664255c-8e8b-4065-b0a9-a0d2eb4977c7.jpg)
+![](https://user-images.githubusercontent.com/1309656/162591089-6951e712-384f-4109-8c57-1caa05ac49f6.jpg)
+
+ ## *  
+url: `https://reaperscans.com/home1/` or url: `https://immortalupdates.com/` (same website design)  
+script: `python css2rss.py "@div.manga" ".post-title" "img" ".btn-link" ".btn-link"`
