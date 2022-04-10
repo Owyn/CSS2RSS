@@ -18,6 +18,9 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 - use space ` ` as the separator for arguments if they contain no spaces themselves, else (if they do) also enclose such arguments into double-brackets `"`, e.g. `python css2rss.py div.class "div.subclass > h1.title" span.description` (btw, you can also enclose arguments without any spaces into brackets if you'd like)
 - if no item is found - a feed item would be generated with the html dump of the whole page so you could see what could be wrong (e.g. - cloudflare block page)
 
+## Limitations:  
+- If you are using a **NoWebEngine** version of the RSSGuard (like I am), then no javaScripts would run on scrapped pages, so sites which populate their content with javaScripts wouldn't be able to get scrapped, instead their starting version (what you'd see in `right click -> view page source`) would get scrapped.
+    - You could try to get the needed content from other pages of the site, e.g. - main page, releases page or even the search page - one of these pages could be static and not constructed using javaScripts
 
 # Installation
 
@@ -66,3 +69,9 @@ script: `python css2rss.py @.group a[href*='/series/'] .meta_r ".element > .titl
  ## *  
 url: `https://reaperscans.com/home1/` or url: `https://immortalupdates.com/` (same website design)  
 script: `python css2rss.py "@div.manga" ".post-title" "img" ".btn-link" ".btn-link"`
+
+ ## *  
+- the workaround to scrap sites which give out their contents via javaScripts  
+
+url: `https://manhuaus.com/?s=Wo+Wei+Xie+Di&post_type=wp-manga&post_type=wp-manga`  
+script: `python css2rss.py ".latest-chap a" "!I'm an Evil God"`  
