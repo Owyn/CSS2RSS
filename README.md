@@ -24,7 +24,9 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 
 # Installation
 
-1) Have Python ( https://www.python.org/downloads/ ) installed (and added to PATH during install)
+1) Have Python ( https://www.python.org/downloads/ ) installed (and added to PATH during install)  
+
+    1.2. Have Python Soup ( https://www.crummy.com/software/BeautifulSoup/ ) installed (Win+R -> cmd -> enter -> `pip install beautifulsoup4`) 
 
 2) Put css2rss.py into your `data4` folder (so you can call the script with just `python css2rss.py`, else you'd need to specify full path to the `.py` file)
 
