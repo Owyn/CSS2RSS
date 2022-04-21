@@ -3,7 +3,7 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 
 ## Arguments - each is a CSS selector ( https://www.w3schools.com/cssref/css_selectors.asp ): 
 1) item
-2) item title (optional - else would use all the text from item as title)
+2) item title (optional - else would use link's text as title)
 3) item description (optional - else would use all the text from item as title)
 4) item link (optional - else would use 1st found link in the item (or the item itself if it's a link))
 5) item title 2nd part (optional (or if static main title \ multilink option is enabled), else just title, e.g. title is "Batman" and 2nd part is "chapter 94")
@@ -17,14 +17,16 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 - use `~` as the whole argument (for arguments after `1) item` to let the script decide what to do (default action) - e.g. use 1st found link inside the item, use whole text inside the item as the description etc (not actually an option, but rather a format for the argument line), e.g. `python css2rss.py div.class ~ span.description` (here link's text will be used as the title by default action but description is manually specified)
 - use space ` ` as the separator for arguments if they contain no spaces themselves, else (if they do) also enclose such arguments into double-brackets `"`, e.g. `python css2rss.py div.class "div.subclass > h1.title" span.description` (btw, you can also enclose arguments without any spaces into brackets if you'd like)
 - if no item is found - a feed item would be generated with the html dump of the whole page so you could see what could be wrong (e.g. - cloudflare block page)
+- content you need to log-in first to see is available
+    - scrapper uses cookies of RSSGuard, so if you login into a website using built-in browser of RSSGuard - scrapper would be able to access that content as well to scrape it into a feed
 
 ## Limitations:  
-- If you are using a **NoWebEngine** version of the RSSGuard (like I am), then no javaScripts would run on scrapped pages, so sites which populate their content with javaScripts wouldn't be able to get scrapped, instead their starting version (what you'd see in `right click -> view page source`) would get scrapped.
+- No javaScripts would run on scrapped pages, so sites which populate their content with javaScripts wouldn't be able to get scrapped, instead their starting version (what you'd see in `right click -> view page source`) would get scrapped.
     - You could try to get the needed content from other pages of the site, e.g. - main page, releases page or even the search page - one of these pages could be static and not constructed using javaScripts
 
 # Installation
 
-1) Have Python ( https://www.python.org/downloads/ ) installed (and added to PATH during install)  
+1) Have Python 3+ or newer ( https://www.python.org/downloads/ ) installed (and added to PATH during install)  
 
     1.2. Have Python Soup ( https://www.crummy.com/software/BeautifulSoup/ ) installed (Win+R -> cmd -> enter -> `pip install beautifulsoup4`) 
 
