@@ -127,7 +127,7 @@ if found_items_n != 0:
 else:
   items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}}}".format(
     title=(json.dumps("ERROR page: " + soup.title.text) if soup.title else json.dumps("ERROR page:")),
-    html=json.dumps(str(soup.select(":root")[0])),
+    html=json.dumps(soup.prettify()),
     url=json.dumps("")))
   json_feed = "{{\"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
   json_feed = json_feed.format(title = (json.dumps("ERROR: " + soup.title.text) if soup.title else json.dumps("ERROR")), description = json.dumps("Error: - CSS selector found no items"), items = ", ".join(items))
