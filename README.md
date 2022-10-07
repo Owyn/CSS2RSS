@@ -4,17 +4,19 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 ## Arguments - each is a CSS selector ( https://www.w3schools.com/cssref/css_selectors.asp ): 
 1) item
 2) item title (optional - else would use link's text as title)
-3) item description (optional - else would use all the text from item as title)
+3) item description (optional - else would use all the text from item as description)
 4) item link (optional - else would use 1st found link in the item (or the item itself if it's a link))
 5) item title 2nd part (optional (or if static main title \ multilink option is enabled), else just title, e.g. title is "Batman" and 2nd part is "chapter 94")
 
 ## Options for arguments:
 * for `1) item` - `@` at start - enables searching for multiple links inside the found item, e.g. one `div` item and multiple `a` links inside it and you want it as separate feed items
-* for `1) title` , `5) item title 2nd part` and `3) item description` - `!` at start - makes it a static specified value (after the !), e.g. `"!my title"`, if you make 1st part of the title fixed then 2nd part title addon would get auto-enabled and it would use text inside the found link as the 2nd part (unless you specify what to use manually as the 5th argument)
+* for everything after `1) item` - `~` as the whole argument - to let the script decide what to do (default action) - e.g. use 1st found link inside the item, use whole text inside the item as the description etc (not actually an option, but rather a format for the argument line), e.g. `python css2rss.py div.itemclass ~ span.description` (here link's inner text (2nd argument) will be used as the title by default action but description is being looked for (3rd argument))
+* for `2) title` , `5) item title 2nd part` and `3) item description` - `!` at start - makes it a static specified value (after the !), e.g. `"!my title"`, if you make 1st part of the title fixed then 2nd part title addon would get auto-enabled and it would use text inside the found link as the 2nd part (unless you specify what to use manually as the 5th argument)
+* for `2) title` , `5) item title 2nd part` - `$` at start - executes a python code expression instead of using CSS selectors, uses found item link as a starting point and takes `text` from it `eval("tLink."+your_inputted_argument).text`, see https://www.crummy.com/software/BeautifulSoup/bs4/doc/ for things you can do with it - e.g. go one level up (to the parent element) or to the next element - or select elements CSS selectors can't select, see example below
 
 ## Notes: 
 - `1) item` is searched in the whole document and the rest is searched inside the `item` document node (but you can make the `item` point right at the `a` hyperlink - it will be used by default)
-- use `~` as the whole argument (for arguments after `1) item` to let the script decide what to do (default action) - e.g. use 1st found link inside the item, use whole text inside the item as the description etc (not actually an option, but rather a format for the argument line), e.g. `python css2rss.py div.class ~ span.description` (here link's text will be used as the title by default action but description is manually specified)
+
 - use space ` ` as the separator for arguments if they contain no spaces themselves, else (if they do) also enclose such arguments into double-brackets `"`, e.g. `python css2rss.py div.class "div.subclass > h1.title" span.description` (btw, you can also enclose arguments without any spaces into brackets if you'd like)
 - if no item is found - a feed item would be generated with the html dump of the whole page so you could see what could be wrong (e.g. - cloudflare block page)
 - content you need to log-in first to see is available
@@ -64,18 +66,25 @@ script: `python css2rss.py "@.uta" "h4" img "li > a" "li > a"`
 ![](https://user-images.githubusercontent.com/1309656/162590934-4c28c614-7548-4048-b147-b7a5b036a842.jpg)
 
  ## *  
+- the reason for implementing eval expressions for titles (since CSS selectors can't select text nodes outside any tags) 
+
+url: `https://reaperscans.com/`  
+script: `python css2rss.py "@div.space-y-4:first-of-type div.relative.bg-white" "p.font-medium" "img" "a.border" "$contents[0]"`
+
+![image](https://user-images.githubusercontent.com/1309656/194601286-7c7b399a-7561-4274-9444-89508dd51681.png)
+![image](https://user-images.githubusercontent.com/1309656/194601403-578c9550-785e-44bd-98d7-88c50f785a5d.png)
+
+
+ ## *  
 url: `https://reader.kireicake.com/`  
 script: `python css2rss.py @.group a[href*='/series/'] .meta_r ".element > .title a" ".element > .title a"`
 
 ![](https://user-images.githubusercontent.com/1309656/162591038-3664255c-8e8b-4065-b0a9-a0d2eb4977c7.jpg)
 ![](https://user-images.githubusercontent.com/1309656/162591089-6951e712-384f-4109-8c57-1caa05ac49f6.jpg)
 
- ## *  
-url: `https://reaperscans.com/home1/` or url: `https://immortalupdates.com/` (same website design)  
-script: `python css2rss.py "@div.manga" ".post-title" "img" ".btn-link" ".btn-link"`
 
  ## *  
-- the workaround to scrap sites which give out their contents via javaScripts  
+- the workaround to scrap sites which give out their contents via javaScripts (the workaround is to find a static page - right-click -> view page source - and see if your text is originally there - that means it's static and not given out later via JS) 
 
 url: `https://manhuaus.com/?s=Wo+Wei+Xie+Di&post_type=wp-manga&post_type=wp-manga`  
 script: `python css2rss.py ".latest-chap a" "!I'm an Evil God"`  
