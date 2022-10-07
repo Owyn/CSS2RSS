@@ -9,10 +9,10 @@ from bs4 import BeautifulSoup
 def css_to_rss(item, depth):
   find_links_near = False
   tLink = None
-  if len(sys.argv) > 4 and sys.argv[4] != '~' and (link_l := len(tLink := item.select(sys.argv[4]))) > depth:
+  if not(bDefault_link) and (link_l := len(tLink := item.select(sys.argv[4]))) > depth:
     tLink = tLink[depth]
     item_link = tLink['href']
-    if multi_enabled and depth+1 < link_l:
+    if bMulti_enabled and depth+1 < link_l:
       find_links_near = True
   else:
     if item.name == "a": #item itself is a link
@@ -28,31 +28,38 @@ def css_to_rss(item, depth):
         return
 
   main_title = ""
-  if fixed_main_title:
+  if bFixed_main_title:
     main_title = sys.argv[2]
-  elif len(sys.argv) > 2 and sys.argv[2] != '~' and (mt_l := len(main_title := item.select(sys.argv[2]))) != 0:
+  elif bEval_main_title:
+      main_title = eval("tLink."+sys.argv[2]).text
+  elif not(bDefault_main_title) and (mt_l := len(main_title := item.select(sys.argv[2]))) != 0:
     main_title = main_title[depth if mt_l > depth else 0].text # not sure if we should look for more main titles?
   else:
     main_title = tLink.text # use the link's text
-    #main_title = item.text # use all the text inside
+    #main_title = item.text # use all the text inside - bad idea
 
   addon_title = ""
-  if fixed_addon_title:
+  if bFixed_addon_title:
       addon_title = sys.argv[5]
-  elif len(sys.argv) > 5 and sys.argv[5] != '~':
-    if len(addon_title := item.select(sys.argv[5])) > depth:
+  elif not(bDefault_addon_title):
+    if bEval_addon_title:
+      addon_title = eval("tLink."+sys.argv[5]).text # lets just use "tLink" as an anchor instead of making ppl care about "[depth]"
+    elif len(addon_title := item.select(sys.argv[5])) > depth:
       addon_title = addon_title[depth].text
     else:
       addon_title = tLink.text
-  elif fixed_main_title or multi_enabled: # enable addon title by default for these options
+  elif bFixed_main_title or bMulti_enabled: # enable addon title by default for these options
     addon_title = tLink.text
+  #raise(ValueError(addon_title)) # lets see what we've found?
 
   item_title = main_title + (" - " if addon_title != "" else "") + addon_title
 
-  if comment_fixed:
+  if bComment_fixed:
     item_description = str(sys.argv[3])
-  elif len(sys.argv) > 3 and sys.argv[3] != '~' and (desc_l := len(tDescr := item.select(sys.argv[3]))) != 0:
+  elif not(bDefault_comment) and (desc_l := len(tDescr := item.select(sys.argv[3]))) != 0:
     item_description = str(tDescr[depth if desc_l > depth else 0]) # keep html, also use 1st found if none further
+    #item_description = item_description.replace('>', '');
+    #item_description = item_description.replace('<', '');
   else:
     item_description = str(item) # use everything inside found item
 
@@ -78,42 +85,62 @@ input_data = sys.stdin.read()
 soup = BeautifulSoup(input_data, 'html.parser')
 items = list()
 
-#raise ValueError(sys.argv)
-# "" - was working before but now it doesn't, gotta workaround and leave back-compatibility
-if len(sys.argv) > 2 and sys.argv[2] == '':
-  sys.argv[2] = '~'
-if len(sys.argv) > 3 and sys.argv[3] == '':
-  sys.argv[3] = '~'
-if len(sys.argv) > 4 and sys.argv[4] == '':
-  sys.argv[4] = '~'
-if len(sys.argv) > 5 and sys.argv[5] == '':
-  sys.argv[5] = '~'
-
-# options: ! - fixed result text, @ - look for multiple links inside one item, ~ - do default action
+# options: ! - fixed result text, @ - look for multiple links inside one item, ~ - do default action, $ - eval code
 if sys.argv[1][0] == '@':
   sys.argv[1] = sys.argv[1][1:]
-  multi_enabled = True
+  bMulti_enabled = True
 else:
-  multi_enabled = False
+  bMulti_enabled = False
 
-if len(sys.argv) > 2 and sys.argv[2][0] == '!':
-  sys.argv[2] = sys.argv[2][1:]
-  fixed_main_title = True
+bDefault_main_title = False
+bFixed_main_title = False
+bEval_main_title = False
+if len(sys.argv) > 2:
+  if sys.argv[2][0] == '!':
+    sys.argv[2] = sys.argv[2][1:]
+    bFixed_main_title = True
+  elif sys.argv[2][0] == '$':
+    sys.argv[2] = sys.argv[2][1:]
+    bEval_main_title = True
+  elif sys.argv[2] == '' or sys.argv[2][0] == '~':
+    bDefault_main_title = True
 else:
-  fixed_main_title = False
+  bDefault_main_title = True
 
-if len(sys.argv) > 5 and sys.argv[5][0] == '!':
-  sys.argv[5] = sys.argv[5][1:]
-  fixed_addon_title = True
+bDefault_addon_title = False
+bFixed_addon_title = False
+bEval_addon_title = False
+if len(sys.argv) > 5:
+  if sys.argv[5][0] == '!':
+    sys.argv[5] = sys.argv[5][1:]
+    bFixed_addon_title = True
+  elif len(sys.argv) > 5 and sys.argv[5][0] == '$':
+    sys.argv[5] = sys.argv[5][1:]
+    bEval_addon_title = True
+  elif sys.argv[5] == '' or sys.argv[5][0] == '~':
+    bDefault_addon_title = True
 else:
-  fixed_addon_title = False
+  bDefault_addon_title = True
 
-if len(sys.argv) > 3 and sys.argv[3][0] == '!':
-  sys.argv[3] = sys.argv[3][1:]
-  comment_fixed = True
+bDefault_comment = False
+bComment_fixed = False
+if len(sys.argv) > 3:
+  if sys.argv[3][0] == '!':
+    sys.argv[3] = sys.argv[3][1:]
+    bComment_fixed = True
+  elif sys.argv[3] == '' or sys.argv[3][0] == '~':
+    bDefault_comment = True
 else:
-  comment_fixed = False
-#
+  bDefault_comment = True
+
+if len(sys.argv) > 4:
+  if sys.argv[4] == '' or sys.argv[4][0] == '~':
+    bDefault_link = True
+  else:
+    bDefault_link = False
+else:
+  bDefault_link = True
+# end options
 
 found_items = soup.select(sys.argv[1])
 found_items_n = len(found_items)
@@ -121,7 +148,6 @@ found_items_bad_n = 0
 if found_items_n != 0:
   for item in found_items:
     css_to_rss(item, 0)
-
   json_feed = "{{\"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
   json_feed = json_feed.format(title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items") if found_items_bad_n == 0 else json.dumps("Script found "+str(found_items_n)+" items, " + str(found_items_bad_n) + " bad items with no link"), items = ", ".join(items))
 else:
