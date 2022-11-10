@@ -4,6 +4,7 @@
 
 import json
 import sys
+import datetime
 from bs4 import BeautifulSoup
 
 def css_to_rss(item, depth):
@@ -152,7 +153,7 @@ if found_items_n != 0:
   json_feed = json_feed.format(title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items") if found_items_bad_n == 0 else json.dumps("Script found "+str(found_items_n)+" items, " + str(found_items_bad_n) + " bad items with no link"), items = ", ".join(items))
 else:
   items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}}}".format(
-    title=(json.dumps("ERROR page: " + soup.title.text) if soup.title else json.dumps("ERROR page:")),
+    title=json.dumps("ERROR page @ " + str(datetime.datetime.now()) + (" - " + soup.title.text) if soup.title else ""),
     html=json.dumps(soup.prettify()),
     url=json.dumps("")))
   json_feed = "{{\"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
