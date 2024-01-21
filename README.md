@@ -7,12 +7,14 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 3) item description (optional - else would use all the text from item as description)
 4) item link (optional - else would use 1st found link in the item (or the item itself if it's a link))
 5) item title 2nd part (optional (or if static main title \ multilink option is enabled), else just title, e.g. title is "Batman" and 2nd part is "chapter 94")
+6) item date (optional, else it'd all be "just now") - aim this selector either at text nodes (e.g. `span`) or elements (`a`, `img`) with `title` or `alt` containing the Date (e.g. "New!" flashing image badges you get the Date when hovering over)
 
 ## Options for arguments:
 * for `1) item` - `@` at start - enables searching for multiple links inside the found item, e.g. one `div` item and multiple `a` links inside it and you want it as separate feed items
 * for everything after `1) item` - `~` as the whole argument - to let the script decide what to do (default action) - e.g. use 1st found link inside the item, use whole text inside the item as the description etc (not actually an option, but rather a format for the argument line), e.g. `python css2rss.py div.itemclass ~ span.description` (here link's inner text (2nd argument) will be used as the title by default action but description is being looked for (3rd argument))
 * for `2) title` , `5) item title 2nd part` and `3) item description` - `!` at start - makes it a static specified value (after the !), e.g. `"!my title"`, if you make 1st part of the title fixed then 2nd part title addon would get auto-enabled and it would use text inside the found link as the 2nd part (unless you specify what to use manually as the 5th argument)
 * for `2) title` , `5) item title 2nd part` - `$` at start - executes a python code expression instead of using CSS selectors, uses found item link as a starting point and takes `text` from it `eval("tLink."+your_inputted_argument).text`, see https://www.crummy.com/software/BeautifulSoup/bs4/doc/ for things you can do with it - e.g. go one level up (to the parent element) or to the next element - or select elements CSS selectors can't select, see example below
+* for `6) date` - `?` at start - tells the parser that you're expecting an Americal format of date - "Month/Day/Year"
 
 ## Notes: 
 - `1) item` is searched in the whole document and the rest is searched inside the `item` document node (but you can make the `item` point right at the `a` hyperlink - it will be used by default)
@@ -30,9 +32,10 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 
 1) Have Python 3+ or newer ( https://www.python.org/downloads/ ) installed (and added to PATH during install)  
 
-    1.2. Have Python Soup ( https://www.crummy.com/software/BeautifulSoup/ ) installed (Win+R -> cmd -> enter -> `pip install beautifulsoup4`) 
+    1.2. Have Python Soup ( https://www.crummy.com/software/BeautifulSoup/ ) installed (Win+R -> cmd -> enter -> `pip install beautifulsoup4`)
+    1.3. (optional) If you'd like to parse Dates for articles - Have Maya ( https://github.com/timofurrer/maya/ ) installed (Win+R -> cmd -> enter -> `pip install maya`)
 
-2) Put css2rss.py into your `data4` folder (so you can call the script with just `python css2rss.py`, else you'd need to specify full path to the `.py` file)
+3) Put css2rss.py into your `data4` folder (so you can call the script with just `python css2rss.py`, else you'd need to specify full path to the `.py` file)
 
 ![data4](https://user-images.githubusercontent.com/1309656/162590050-0c6d4d9d-4c57-4123-9959-06a83f0af61b.jpg)
 
@@ -81,6 +84,16 @@ script: `python css2rss.py @.group a[href*='/series/'] .meta_r ".element > .titl
 
 ![](https://user-images.githubusercontent.com/1309656/162591038-3664255c-8e8b-4065-b0a9-a0d2eb4977c7.jpg)
 ![](https://user-images.githubusercontent.com/1309656/162591089-6951e712-384f-4109-8c57-1caa05ac49f6.jpg)
+
+
+ ## *  
+ - example for parsing Dates for articles, here it uses OR in the css selector and it looks for either `a` element (the "New!" badge) with date inside its tooltip (`title` or `alt`) **OR** for a `span` element without any child nodes (both these elements are of class `.post-on`
+ 
+url: `https://drakescans.com/`  
+script: `python css2rss.py  "@.page-item-detail" ".post-title a" "img" "span.chapter > a" ~ ".post-on > a,.post-on:not(:has(*))"`
+
+![](https://github.com/Owyn/CSS2RSS/assets/1309656/692796e0-8caa-4b1b-ac05-2be60388aa28)
+![](https://github.com/Owyn/CSS2RSS/assets/1309656/55220446-4c22-498a-9bb7-1c27294996bb)
 
 
  ## *  
