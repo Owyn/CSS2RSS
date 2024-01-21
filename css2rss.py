@@ -1,6 +1,6 @@
 # CSS2RSS
 # input html file must be provided in stdin
-# arguments: item, item title, item description, item link, item title 2nd part
+# arguments: item, item title, item description, item link, item title 2nd part, item date
 
 import json
 import sys
@@ -59,15 +59,29 @@ def css_to_rss(item, depth):
     item_description = str(sys.argv[3])
   elif not(bDefault_comment) and (desc_l := len(tDescr := item.select(sys.argv[3]))) != 0:
     item_description = str(tDescr[depth if desc_l > depth else 0]) # keep html, also use 1st found if none further
-    #item_description = item_description.replace('>', '');
-    #item_description = item_description.replace('<', '');
+    #item_description = item_description.replace('<', '≤').replace('&', '＆') # don't keep html
   else:
     item_description = str(item) # use everything inside found item
 
-  items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}}}".format(
+  item_date = ""
+  if bFind_date and (date_l := len(tDate := item.select(sys.argv[6]))) != 0:
+    DateCurEl = tDate[depth if date_l > depth else 0]
+    item_date = DateCurEl.text or (DateCurEl['alt'] if DateCurEl.has_attr('alt') else DateCurEl['title'] if DateCurEl.has_attr('title') else "")
+    try:
+      item_date = maya.parse(item_date, "UTC", bNotAmerican_Date).datetime().isoformat()
+    except BaseException:
+      try:
+        item_date = maya.when(item_date).datetime().isoformat()
+      except ValueError:
+        #ok what now? do we error everything or say that the feed is fully invalid when just the date is invalid?
+        item_description += "\n<br>CSS2RSS: Date '"+item_date+"' from element '"+str(DateCurEl).replace('<', '≤').replace('&', '＆')+"' could not be parsed for this entry, please adjust your CSS selector: " + sys.argv[6].replace('<', '≤').replace('&', '＆')
+        item_date = ""
+
+  items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}, \"date_published\": {date}}}".format(
       title=json.dumps(item_title),
       html=json.dumps(item_description),
-      url=json.dumps(item_link)))
+      url=json.dumps(item_link),
+      date=json.dumps(item_date)))
 
   if find_links_near:
     global found_items_n
@@ -141,6 +155,17 @@ if len(sys.argv) > 4:
     bDefault_link = False
 else:
   bDefault_link = True
+
+bFind_date = False
+bNotAmerican_Date = True
+if len(sys.argv) > 6:
+  if sys.argv[6] != '' and sys.argv[6][0] != '~':
+    bFind_date = True
+    import maya
+    if sys.argv[6][0] == '?':
+      sys.argv[6] = sys.argv[6][1:]
+      bNotAmerican_Date = False
+
 # end options
 
 found_items = soup.select(sys.argv[1])
