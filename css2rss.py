@@ -111,14 +111,14 @@ bDefault_main_title = False
 bFixed_main_title = False
 bEval_main_title = False
 if len(sys.argv) > 2:
-  if sys.argv[2][0] == '!':
+  if sys.argv[2] == '' or sys.argv[2][0] == '~':
+    bDefault_main_title = True
+  elif sys.argv[2][0] == '!':
     sys.argv[2] = sys.argv[2][1:]
     bFixed_main_title = True
   elif sys.argv[2][0] == '$':
     sys.argv[2] = sys.argv[2][1:]
     bEval_main_title = True
-  elif sys.argv[2] == '' or sys.argv[2][0] == '~':
-    bDefault_main_title = True
 else:
   bDefault_main_title = True
 
@@ -126,25 +126,25 @@ bDefault_addon_title = False
 bFixed_addon_title = False
 bEval_addon_title = False
 if len(sys.argv) > 5:
-  if sys.argv[5][0] == '!':
+  if sys.argv[5] == '' or sys.argv[5][0] == '~':
+    bDefault_addon_title = True
+  elif sys.argv[5][0] == '!':
     sys.argv[5] = sys.argv[5][1:]
     bFixed_addon_title = True
   elif len(sys.argv) > 5 and sys.argv[5][0] == '$':
     sys.argv[5] = sys.argv[5][1:]
     bEval_addon_title = True
-  elif sys.argv[5] == '' or sys.argv[5][0] == '~':
-    bDefault_addon_title = True
 else:
   bDefault_addon_title = True
 
 bDefault_comment = False
 bComment_fixed = False
 if len(sys.argv) > 3:
-  if sys.argv[3][0] == '!':
+  if sys.argv[3] == '' or sys.argv[3][0] == '~':
+    bDefault_comment = True
+  elif sys.argv[3][0] == '!':
     sys.argv[3] = sys.argv[3][1:]
     bComment_fixed = True
-  elif sys.argv[3] == '' or sys.argv[3][0] == '~':
-    bDefault_comment = True
 else:
   bDefault_comment = True
 
