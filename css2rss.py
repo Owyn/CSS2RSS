@@ -64,19 +64,24 @@ def css_to_rss(item, depth):
     item_description = str(item) # use everything inside found item
 
   item_date = ""
-  if bFind_date and (date_l := len(tDate := item.select(sys.argv[6]))) != 0:
-    DateCurEl = tDate[depth if date_l > depth else 0]
-    item_date = DateCurEl.text or (DateCurEl['alt'] if DateCurEl.has_attr('alt') else DateCurEl['title'] if DateCurEl.has_attr('title') else "")
-    try:
-      item_date = maya.parse(item_date, "UTC", bNotAmerican_Date).datetime().isoformat()
-    except BaseException:
+  if bFind_date:
+    if (date_l := len(tDate := item.select(sys.argv[6]))) != 0:
+      DateCurEl = tDate[depth if date_l > depth else 0]
+      item_date = (DateCurEl['datetime'] if DateCurEl.has_attr('datetime') else DateCurEl['alt'] if DateCurEl.has_attr('alt') else DateCurEl['title'] if DateCurEl.has_attr('title') else "") or DateCurEl.text
+      global description_addon
       try:
-        item_date = maya.when(item_date).datetime().isoformat()
-      except ValueError:
-        #ok what now? do we error everything or say that the feed is fully invalid when just the date is invalid?
-        item_description += "\n<br>CSS2RSS: Date '"+item_date+"' from element '"+str(DateCurEl).replace('<', '≤').replace('&', '＆')+"' could not be parsed for this entry, please adjust your CSS selector: " + sys.argv[6].replace('<', '≤').replace('&', '＆')
-        item_date = ""
-
+        item_date = maya.parse(item_date, "UTC", bNotAmerican_Date).datetime().isoformat()
+      except BaseException:
+        try:
+          item_date = maya.when(item_date).datetime().isoformat()
+        except ValueError:
+          #ok what now? do we error everything or say that the feed is fully invalid when just the date is invalid?
+          item_description += "\n<br>CSS2RSS: Date '"+item_date+"' from element '"+str(DateCurEl).replace('<', '≤').replace('&', '＆')+"' could not be parsed for this entry, please adjust your CSS selector: " + sys.argv[6].replace('<', '≤').replace('&', '＆')
+          description_addon = ", Failed parsing Dates"
+          item_date = ""
+    else:
+      description_addon = ", Failed to find Date elements"
+  
   items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}, \"date_published\": {date}}}".format(
       title=json.dumps(item_title),
       html=json.dumps(item_description),
@@ -171,11 +176,12 @@ if len(sys.argv) > 6:
 found_items = soup.select(sys.argv[1])
 found_items_n = len(found_items)
 found_items_bad_n = 0
+description_addon = ""
 if found_items_n != 0:
   for item in found_items:
     css_to_rss(item, 0)
   json_feed = "{{\"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
-  json_feed = json_feed.format(title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items") if found_items_bad_n == 0 else json.dumps("Script found "+str(found_items_n)+" items, " + str(found_items_bad_n) + " bad items with no link"), items = ", ".join(items))
+  json_feed = json_feed.format(title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items"+str(description_addon)) if found_items_bad_n == 0 else json.dumps("Script found "+str(found_items_n)+" items, " + str(found_items_bad_n) + " bad items with no link"+str(description_addon)), items = ", ".join(items))
 else:
   items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}}}".format(
     title=json.dumps("ERROR page @ " + str(datetime.datetime.now()) + (" - " + soup.title.text) if soup.title else ""),
