@@ -176,19 +176,20 @@ if len(sys.argv) > 6:
 found_items = soup.select(sys.argv[1])
 found_items_n = len(found_items)
 found_items_bad_n = 0
+
+jsonfeed_version = "https://jsonfeed.org/version/1.1"
 description_addon = ""
 if found_items_n != 0:
   for item in found_items:
     css_to_rss(item, 0)
-  json_feed = "{{\"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
-  json_feed = json_feed.format(title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items"+str(description_addon)) if found_items_bad_n == 0 else json.dumps("Script found "+str(found_items_n)+" items, " + str(found_items_bad_n) + " bad items with no link"+str(description_addon)), items = ", ".join(items))
+  json_feed = "{{\"version\": {version}, \"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
+  json_feed = json_feed.format(version = json.dumps(jsonfeed_version), title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items"+str(description_addon)) if found_items_bad_n == 0 else json.dumps("Script found "+str(found_items_n)+" items, " + str(found_items_bad_n) + " bad items with no link"+str(description_addon)), items = ", ".join(items))
 else:
   items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}}}".format(
     title=json.dumps("ERROR page @ " + str(datetime.datetime.now()) + (" - " + soup.title.text) if soup.title else ""),
     html=json.dumps(soup.prettify()),
     url=json.dumps("")))
-  json_feed = "{{\"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
-  json_feed = json_feed.format(title = (json.dumps("ERROR: " + soup.title.text) if soup.title else json.dumps("ERROR")), description = json.dumps("Error: - CSS selector found no items"), items = ", ".join(items))
+  json_feed = "{{\"version\": {version}, \"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
+  json_feed = json_feed.format(version = json.dumps(jsonfeed_version), title = (json.dumps("ERROR: " + soup.title.text) if soup.title else json.dumps("ERROR")), description = json.dumps("Error: - CSS selector found no items"), items = ", ".join(items))
 
 print(json_feed)
-
