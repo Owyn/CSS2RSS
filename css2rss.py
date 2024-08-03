@@ -6,7 +6,6 @@ import json
 import sys
 import datetime
 from bs4 import BeautifulSoup
-from tzlocal import get_localzone
 
 def css_to_rss(item, depth):
   find_links_near = False
@@ -169,6 +168,7 @@ if len(sys.argv) > 6:
   if sys.argv[6] != '' and sys.argv[6][0] != '~':
     bFind_date = True
     import maya
+    from tzlocal import get_localzone
     if sys.argv[6][0] == '?':
       sys.argv[6] = sys.argv[6][1:]
       bNotAmerican_Date = False
