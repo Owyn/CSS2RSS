@@ -33,7 +33,7 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 1) Have Python 3+ or newer ( https://www.python.org/downloads/ ) installed (and added to PATH during install)  
 
     1.2. Have Python Soup ( https://www.crummy.com/software/BeautifulSoup/ ) installed (Win+R -> cmd -> enter -> `pip install beautifulsoup4`)  
-    1.3. (optional) If you'd like to parse Dates for articles - Have Maya ( https://github.com/timofurrer/maya/ ) installed (Win+R -> cmd -> enter -> `pip install maya`)  
+    1.3. (optional) If you'd like to parse Dates for articles - Have Maya ( https://github.com/timofurrer/maya/ ) installed (Righ click the Start menu -> run powershell as administrator -> cmd -> `pip install maya`)  
 
 3) Put css2rss.py into your `data4` folder (so you can call the script with just `python css2rss.py`, else you'd need to specify full path to the `.py` file)
 
