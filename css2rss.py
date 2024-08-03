@@ -6,6 +6,7 @@ import json
 import sys
 import datetime
 from bs4 import BeautifulSoup
+from tzlocal import get_localzone
 
 def css_to_rss(item, depth):
   find_links_near = False
@@ -68,19 +69,20 @@ def css_to_rss(item, depth):
     if (date_l := len(tDate := item.select(sys.argv[6]))) != 0:
       DateCurEl = tDate[depth if date_l > depth else 0]
       item_date = (DateCurEl['datetime'] if DateCurEl.has_attr('datetime') else DateCurEl['alt'] if DateCurEl.has_attr('alt') else DateCurEl['title'] if DateCurEl.has_attr('title') else "") or DateCurEl.text
-      global description_addon
       try:
-        item_date = maya.parse(item_date, "UTC", bNotAmerican_Date).datetime().isoformat()
+        item_date = maya.parse(item_date, get_localzone().key, bNotAmerican_Date).datetime().isoformat()
       except BaseException:
         try:
-          item_date = maya.when(item_date).datetime().isoformat()
+          item_date = maya.when(item_date, get_localzone().key).datetime().isoformat()
         except ValueError:
           #ok what now? do we error everything or say that the feed is fully invalid when just the date is invalid?
           item_description += "\n<br>CSS2RSS: Date '"+item_date+"' from element '"+str(DateCurEl).replace('<', '≤').replace('&', '＆')+"' could not be parsed for this entry, please adjust your CSS selector: " + sys.argv[6].replace('<', '≤').replace('&', '＆')
-          description_addon = ", Failed parsing Dates"
+          global found_items_w_bad_dates
+          found_items_w_bad_dates += 1
           item_date = ""
     else:
-      description_addon = ", Failed to find Date elements"
+      global found_items_wo_dates
+      found_items_wo_dates += 1
   
   items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}, \"date_published\": {date}}}".format(
       title=json.dumps(item_title),
@@ -176,14 +178,22 @@ if len(sys.argv) > 6:
 found_items = soup.select(sys.argv[1])
 found_items_n = len(found_items)
 found_items_bad_n = 0
+found_items_wo_dates = 0
+found_items_w_bad_dates = 0
 
 jsonfeed_version = "https://jsonfeed.org/version/1.1"
 description_addon = ""
 if found_items_n != 0:
   for item in found_items:
     css_to_rss(item, 0)
+  if found_items_bad_n != 0:
+    description_addon += ", Found items with NO Link: " + str(found_items_bad_n)
+  if found_items_wo_dates != 0:
+    description_addon += ", Found no Date item for: " + str(found_items_wo_dates)
+  if found_items_w_bad_dates != 0:
+    description_addon += ", Failed to parse Dates for: " + str(found_items_w_bad_dates)
   json_feed = "{{\"version\": {version}, \"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
-  json_feed = json_feed.format(version = json.dumps(jsonfeed_version), title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items"+str(description_addon)) if found_items_bad_n == 0 else json.dumps("Script found "+str(found_items_n)+" items, " + str(found_items_bad_n) + " bad items with no link"+str(description_addon)), items = ", ".join(items))
+  json_feed = json_feed.format(version = json.dumps(jsonfeed_version), title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items"+description_addon), items = ", ".join(items))
 else:
   items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}}}".format(
     title=json.dumps("ERROR page @ " + str(datetime.datetime.now()) + (" - " + soup.title.text) if soup.title else ""),
