@@ -19,7 +19,8 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 ## Notes: 
 - `1) item` is searched in the whole document and the rest is searched inside the `item` document node (but you can make the `item` point right at the `a` hyperlink - it will be used by default)
 
-- use space ` ` as the separator for arguments if they contain no spaces themselves, else (if they do) also enclose such arguments into double-brackets `"`, e.g. `python css2rss.py div.class "div.subclass > h1.title" span.description` (btw, you can also enclose arguments without any spaces into brackets if you'd like)
+- use space ` ` as the separator for arguments if they contain no spaces themselves, else (if they do) also enclose such arguments into quotation marks `"`, e.g. `python css2rss.py div.class "div.subclass > h1.title" span.description` (btw, you can also enclose arguments without any spaces into brackets if you'd like)
+**Warning**: starting from RSSGuard v4.5.2 which supports single quotation marks as well `'` you have to either use single quotation marks instead `'` to enclose arguments to pass them as is or escape backslashes and double-quotes with backslashes, e.g. `python css2rss.py "\\:argument starting with\\:"` or `python css2rss.py '\:argument starting with\:'`
 - if no item is found - a feed item would be generated with the html dump of the whole page so you could see what could be wrong (e.g. - cloudflare block page)
 - content you need to log-in first to see is available
     - scrapper uses cookies of RSSGuard, so if you login into a website using built-in browser of RSSGuard - scrapper would be able to access that content as well to scrape it into a feed
