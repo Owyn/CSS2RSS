@@ -70,10 +70,10 @@ def css_to_rss(item, depth):
       item_date = (DateCurEl['datetime'] if DateCurEl.has_attr('datetime') else DateCurEl['alt'] if DateCurEl.has_attr('alt') else DateCurEl['title'] if DateCurEl.has_attr('title') else "") or DateCurEl.text
       try:
         item_date = maya.parse(item_date, get_localzone().key, bNotAmerican_Date).datetime().isoformat()
-      except BaseException:
+      except: # BaseException:
         try:
           item_date = maya.when(item_date, get_localzone().key).datetime().isoformat()
-        except ValueError:
+        except: # ValueError:
           #ok what now? do we error everything or say that the feed is fully invalid when just the date is invalid?
           item_description += "\n<br>CSS2RSS: Date '"+item_date+"' from element '"+str(DateCurEl).replace('<', '≤').replace('&', '＆')+"' could not be parsed for this entry, please adjust your CSS selector: " + sys.argv[6].replace('<', '≤').replace('&', '＆')
           global found_items_w_bad_dates
@@ -167,8 +167,11 @@ bNotAmerican_Date = True
 if len(sys.argv) > 6:
   if sys.argv[6] != '' and sys.argv[6][0] != '~':
     bFind_date = True
-    import maya
-    from tzlocal import get_localzone
+    try:
+      import maya
+      from tzlocal import get_localzone
+    except BaseException as e:
+      raise(SystemExit("Couldn't import Maya module to parse time, have you installed it? error: ", e))
     if sys.argv[6][0] == '?':
       sys.argv[6] = sys.argv[6][1:]
       bNotAmerican_Date = False
