@@ -1,3 +1,10 @@
+# /// script
+# requires-python = ">=3.13"
+# dependencies = [
+#     "beautifulsoup4",
+#     "maya",
+# ]
+# ///
 # CSS2RSS
 # input html file must be provided in stdin
 # arguments: item, item title, item description, item link, item title 2nd part, item date
