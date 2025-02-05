@@ -73,7 +73,7 @@ script: `python css2rss.py "@.uta" "h4" img "li > a" "li > a"`
 - the reason for implementing eval expressions for titles (since CSS selectors can't select text nodes outside any tags) 
 
 url: `https://reaperscans.com/`  
-script: `python css2rss.py "@div.space-y-4:first-of-type div.relative.bg-white" "p.font-medium" "img" "a.border" "$found_ink.contents[0].text"` (it was just `$contents[0]` previously as seen on the screenshot but later more freedom was given so now you have to write the full code)
+script: `python css2rss.py "@div.space-y-4:first-of-type div.relative.bg-white" "p.font-medium" "img" "a.border" "$found_link.contents[0].text"` (it was just `$contents[0]` previously as seen on the screenshot but later more freedom was given so now you have to write the full code)
 
 ![image](https://user-images.githubusercontent.com/1309656/194601286-7c7b399a-7561-4274-9444-89508dd51681.png)
 ![image](https://user-images.githubusercontent.com/1309656/194601403-578c9550-785e-44bd-98d7-88c50f785a5d.png)
