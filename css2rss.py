@@ -16,21 +16,26 @@ from bs4 import BeautifulSoup
 
 def css_to_rss(item, depth):
   find_links_near = False
-  tLink = None
-  if not(bDefault_link) and (link_l := len(tLink := item.select(sys.argv[4]))) > depth:
-    tLink = tLink[depth]
-    item_link = tLink['href']
+  if aEval[4]:
+      link_selector = eval(sys.argv[4])
+  elif not(bDefault_link):
+      link_selector = sys.argv[4]
+  found_link = None
+  if not(bDefault_link) and (link_l := len(found_link := item.select(link_selector))) > depth:
+    found_link = found_link[depth]
+    item_link = found_link['href']
     if bMulti_enabled and depth+1 < link_l:
       find_links_near = True
   else:
     if item.name == "a": #item itself is a link
-      tLink = item
+      found_link = item
       item_link = item['href']
     else: # use 1st link found
-      tLink = item.find("a")
-      if(tLink):
-        item_link = tLink['href']
-      else: # we found something else without a link
+      if bDefault_link:
+        found_link = item.find("a")
+        if found_link:
+          item_link = found_link['href']
+      if not(found_link): # we found something else without a link or we specified a link to find so we don't want 1st found link anymore
         global found_items_bad_n
         found_items_bad_n += 1
         return
@@ -38,32 +43,34 @@ def css_to_rss(item, depth):
   main_title = ""
   if bFixed_main_title:
     main_title = sys.argv[2]
-  elif bEval_main_title:
-      main_title = eval("tLink."+sys.argv[2]).text
+  elif aEval[2]:
+      main_title = eval(sys.argv[2])
   elif not(bDefault_main_title) and (mt_l := len(main_title := item.select(sys.argv[2]))) != 0:
     main_title = main_title[depth if mt_l > depth else 0].text # not sure if we should look for more main titles?
   else:
-    main_title = tLink.text # use the link's text
+    main_title = found_link.text # use the link's text
     #main_title = item.text # use all the text inside - bad idea
 
   addon_title = ""
   if bFixed_addon_title:
       addon_title = sys.argv[5]
   elif not(bDefault_addon_title):
-    if bEval_addon_title:
-      addon_title = eval("tLink."+sys.argv[5]).text # lets just use "tLink" as an anchor instead of making ppl care about "[depth]"
+    if aEval[5]:
+      addon_title = eval(sys.argv[5])
     elif len(addon_title := item.select(sys.argv[5])) > depth:
       addon_title = addon_title[depth].text
     else:
-      addon_title = tLink.text
+      addon_title = found_link.text
   elif bFixed_main_title or bMulti_enabled: # enable addon title by default for these options
-    addon_title = tLink.text
+    addon_title = found_link.text
   #raise(ValueError(addon_title)) # lets see what we've found?
 
   item_title = main_title + (" - " if addon_title != "" else "") + addon_title
 
   if bComment_fixed:
     item_description = str(sys.argv[3])
+  elif aEval[3]:
+    item_description = eval(sys.argv[3])
   elif not(bDefault_comment) and (desc_l := len(tDescr := item.select(sys.argv[3]))) != 0:
     item_description = str(tDescr[depth if desc_l > depth else 0]) # keep html, also use 1st found if none further
     #item_description = item_description.replace('<', '≤').replace('&', '＆') # don't keep html
@@ -72,7 +79,11 @@ def css_to_rss(item, depth):
 
   item_date = ""
   if bFind_date:
-    if (date_l := len(tDate := item.select(sys.argv[6]))) != 0:
+    if aEval[6]:
+      tDate_selector = eval(sys.argv[6])
+    else:
+      tDate_selector = sys.argv[6]
+    if (date_l := len(tDate := item.select(tDate_selector))) != 0:
       DateCurEl = tDate[depth if date_l > depth else 0]
       item_date = (DateCurEl['datetime'] if DateCurEl.has_attr('datetime') else DateCurEl['alt'] if DateCurEl.has_attr('alt') else DateCurEl['title'] if DateCurEl.has_attr('title') else "") or DateCurEl.text
       try:
@@ -120,18 +131,22 @@ if sys.argv[1][0] == '@':
 else:
   bMulti_enabled = False
 
+aEval = [False] * 7
+i = 1
+while i < len(sys.argv):
+  if sys.argv[i][0] == '$':
+    sys.argv[i] = sys.argv[i][1:] # cut $
+    aEval[i] = True
+  i += 1
+
 bDefault_main_title = False
 bFixed_main_title = False
-bEval_main_title = False
 if len(sys.argv) > 2:
   if sys.argv[2] == '' or sys.argv[2][0] == '~':
     bDefault_main_title = True
   elif sys.argv[2][0] == '!':
     sys.argv[2] = sys.argv[2][1:]
     bFixed_main_title = True
-  elif sys.argv[2][0] == '$':
-    sys.argv[2] = sys.argv[2][1:]
-    bEval_main_title = True
 else:
   bDefault_main_title = True
 
@@ -185,7 +200,11 @@ if len(sys.argv) > 6:
 
 # end options
 
-found_items = soup.select(sys.argv[1])
+if aEval[1]:
+  item_selector = eval(sys.argv[1])
+else:
+  item_selector = sys.argv[1]
+found_items = soup.select(item_selector)
 found_items_n = len(found_items)
 found_items_bad_n = 0
 found_items_wo_dates = 0
