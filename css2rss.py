@@ -79,13 +79,15 @@ def css_to_rss(item, depth):
 
   item_date = ""
   if bFind_date:
-    if aEval[6]:
-      tDate_selector = eval(sys.argv[6])
-    else:
-      tDate_selector = sys.argv[6]
-    if (date_l := len(tDate := item.select(tDate_selector))) != 0:
-      DateCurEl = tDate[depth if date_l > depth else 0]
-      item_date = (DateCurEl['datetime'] if DateCurEl.has_attr('datetime') else DateCurEl['alt'] if DateCurEl.has_attr('alt') else DateCurEl['title'] if DateCurEl.has_attr('title') else "") or DateCurEl.text
+    if ((tDate := eval(sys.argv[6])) if aEval[6] else (date_l := len(tDate := item.select(sys.argv[6])))) != 0:
+      if aEval[6]:
+        DateCurEl = tDate
+      else:
+        DateCurEl = tDate[depth if date_l > depth else 0]
+      if type(DateCurEl) == str:
+        item_date = DateCurEl
+      else:
+        item_date = (DateCurEl['datetime'] if DateCurEl.has_attr('datetime') else DateCurEl['alt'] if DateCurEl.has_attr('alt') else DateCurEl['title'] if DateCurEl.has_attr('title') else "") or DateCurEl.text
       try:
         item_date = maya.parse(item_date, get_localzone().key, bNotAmerican_Date).datetime().isoformat()
       except: # BaseException:
