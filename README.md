@@ -13,7 +13,7 @@ scrapper post-process script for RSSGuard ( https://github.com/martinrotter/rssg
 * for `1) item` - `@` at start - enables searching for multiple links inside the found item, e.g. one `div` item and multiple `a` links inside it and you want it as separate feed items
 * for everything after `1) item` - `~` as the whole argument - to let the script decide what to do (default action) - e.g. use 1st found link inside the item, use whole text inside the item as the description etc (not actually an option, but rather a format for the argument line), e.g. `python css2rss.py div.itemclass ~ span.description` (here link's inner text (2nd argument) will be used as the title by default action but description is being looked for (3rd argument))
 * for `2) title` , `5) item title 2nd part` and `3) item description` - `!` at start - makes it a static specified value (after the !), e.g. `"!my title"`, if you make 1st part of the title fixed then 2nd part title addon would get auto-enabled and it would use text inside the found link as the 2nd part (unless you specify what to use manually as the 5th argument)
-* for everything (even for the `1) item` - `$` at start - executes (via `eval()`) a python code expression instead of using CSS selectors, the return value of that expression will be used for that item e.g. `$found_link.find('img')['alt']` would return `alt` text from an `img` element inside found link, see https://www.crummy.com/software/BeautifulSoup/bs4/doc/ for things you can do with the soup - e.g. go one level up (to the parent element) or to the next element - or select elements CSS selectors can't select, or anything you can do with Python - see examples section below
+* for everything (even for the `1) item` - `$` at start - executes (via `eval()`) a python code expression instead of using CSS selectors, the return value of that expression will be used for that item e.g. `$found_link.select('img')['alt']` would return `alt` text from an `img` element inside found link, see https://www.crummy.com/software/BeautifulSoup/bs4/doc/ for things you can do with the soup - e.g. go one level up (to the parent element) or to the next element - or select elements CSS selectors can't select, or anything you can do with Python - see examples section below, useful script's variables are `found_link` and `item` (found link and the whole found item) - you can CSS `.select` inside them e.g. - `$item.select('img.class')` to find an image element of class "class" inside your found root item
 * for `6) date` - `?` at start - tells the parser that you're expecting an Americal format of date - "Month/Day/Year"
 
 ## Notes: 
@@ -77,6 +77,25 @@ script: `python css2rss.py "@div.space-y-4:first-of-type div.relative.bg-white" 
 
 ![image](https://user-images.githubusercontent.com/1309656/194601286-7c7b399a-7561-4274-9444-89508dd51681.png)
 ![image](https://user-images.githubusercontent.com/1309656/194601403-578c9550-785e-44bd-98d7-88c50f785a5d.png)
+
+ ## *
+- using img titles (alt) as RSS titles with the help of $ eval
+
+url: `[https://reaperscans.com/](https://imginn.com/gothicarchitectures/)`  
+script: `python css2rss.py ".img" "$found_link.find('img')['alt'][:60]" "$str(found_link.find('img'))+'<br>'+found_link.find('img')['alt']"` 
+
+![410191698-b9165ecf-461d-4fd1-91f7-c9cfe1124c10](https://github.com/user-attachments/assets/22a901ac-e971-4e31-8d51-6eaf9b8a3bfb)
+
+
+ ## *
+- cutting out part of the text to use (as a date)
+
+url: `[[https://reaperscans.com/](https://imginn.com/gothicarchitectures/)](https://support.microsoft.com/en-us/topic/windows-10-update-history-8127c2c6-6edf-4fdf-8b9f-0f7be1ef3562)`  
+script: `python css2rss.py "#supLeftNav > div > ul:nth-child(2) > li.supLeftNavArticle:nth-child(2) > .supLeftNavLink" ~ "$found_link.contents[0].text[:found_link.contents[0].text.find('—')]" ~ ~ "$found_link.contents[0].text[:found_link.contents[0].text.find('—')]"` 
+
+![410204374-17a8d1a3-66a2-4d7d-a121-108b85bb8d94](https://github.com/user-attachments/assets/95a709c0-723f-4afb-a744-5cabea0b6de7)
+
+
 
 
  ## *  
