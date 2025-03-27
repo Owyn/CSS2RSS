@@ -226,6 +226,7 @@ if found_items_n != 0:
   json_feed = "{{\"version\": {version}, \"title\": {title}, \"description\": {description}, \"items\": [{items}]}}"
   json_feed = json_feed.format(version = json.dumps(jsonfeed_version), title = json.dumps(soup.title.text), description = json.dumps("Script found "+str(found_items_n)+" items"+description_addon), items = ", ".join(items))
 else:
+  raise(SystemExit("CSS selector found no items - is the content generated with JavaScript? - Or did the website change its structure?"))
   items.append("{{\"title\": {title}, \"content_html\": {html}, \"url\": {url}}}".format(
     title=json.dumps("ERROR page @ " + str(datetime.datetime.now()) + (" - " + soup.title.text) if soup.title else ""),
     html=json.dumps(soup.prettify()),
