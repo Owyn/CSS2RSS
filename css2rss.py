@@ -18,7 +18,7 @@ def css_to_rss(item, depth):
   find_links_near = False
   
   item_link = None
-  if (sys.argv[4][0] == '!'):
+  if (len(sys.argv) > 4 and sys.argv[4] != '' and sys.argv[4][0] == '!'):
     item_link = sys.argv[4][1:]
   elif aEval[4]:
     eval_link = eval(sys.argv[4])
