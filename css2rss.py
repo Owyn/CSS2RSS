@@ -16,29 +16,38 @@ from bs4 import BeautifulSoup
 
 def css_to_rss(item, depth):
   find_links_near = False
-  if aEval[4]:
-      link_selector = eval(sys.argv[4])
+  
+  item_link = None
+  if (sys.argv[4][0] == '!'):
+    item_link = sys.argv[4][1:]
+  elif aEval[4]:
+    eval_link = eval(sys.argv[4])
+    if (eval_link.name == "a"):
+      found_link = eval_link
+      item_link = found_link['href']
   elif not(bDefault_link):
-      link_selector = sys.argv[4]
-  found_link = None
-  if not(bDefault_link) and (link_l := len(found_link := item.select(link_selector))) > depth:
-    found_link = found_link[depth]
-    item_link = found_link['href']
-    if bMulti_enabled and depth+1 < link_l:
-      find_links_near = True
-  else:
-    if item.name == "a": #item itself is a link
-      found_link = item
-      item_link = item['href']
-    else: # use 1st link found
-      if bDefault_link:
-        found_link = item.find("a")
-        if found_link:
-          item_link = found_link['href']
-      if not(found_link): # we found something else without a link or we specified a link to find so we don't want 1st found link anymore
-        global found_items_bad_n
-        found_items_bad_n += 1
-        return
+    link_selector = sys.argv[4]
+
+  if not(item_link):
+    found_link = None
+    if not(bDefault_link) and (link_l := len(found_link := item.select(link_selector))) > depth:
+      found_link = found_link[depth]
+      item_link = found_link['href']
+      if bMulti_enabled and depth+1 < link_l:
+        find_links_near = True
+    else:
+      if item.name == "a": #item itself is a link
+        found_link = item
+        item_link = item['href']
+      else: # use 1st link found
+        if bDefault_link:
+          found_link = item.find("a")
+          if found_link:
+            item_link = found_link['href']
+        if not(found_link): # we found something else without a link or we specified a link to find so we don't want 1st found link anymore
+          global found_items_bad_n
+          found_items_bad_n += 1
+          return
 
   main_title = ""
   if bFixed_main_title:
