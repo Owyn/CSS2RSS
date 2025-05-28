@@ -16,12 +16,23 @@ from bs4 import BeautifulSoup
 
 def css_to_rss(item, depth):
   find_links_near = False
-  if aEval[4]:
-      link_selector = eval(sys.argv[4])
-  elif not(bDefault_link):
-      link_selector = sys.argv[4]
   found_link = None
-  if not(bDefault_link) and (link_l := len(found_link := item.select(link_selector))) > depth:
+  if (not(bDefault_link) and sys.argv[4][0] == '!'):
+    item_link = sys.argv[4][1:]
+    #found_link = item #for the default description - maybe bad idea?
+    if bMulti_enabled and not(bDefault_main_title) and (depth+1 < len(item.select(sys.argv[2]))): # lets count found main titles then if the link is static?
+      find_links_near = True
+  elif aEval[4]:
+    found_link = eval(sys.argv[4])
+    if isinstance(found_link, list) == True:
+      if (link_l := len(found_link)) > depth:
+        if bMulti_enabled and depth+1 < link_l:
+          find_links_near = True
+        found_link = found_link[depth]
+        item_link = found_link['href']
+    else:
+      item_link = found_link['href']
+  elif not(bDefault_link) and (link_l := len(found_link := item.select(sys.argv[4]))) > depth:
     found_link = found_link[depth]
     item_link = found_link['href']
     if bMulti_enabled and depth+1 < link_l:
@@ -39,38 +50,50 @@ def css_to_rss(item, depth):
         global found_items_bad_n
         found_items_bad_n += 1
         return
-
-  main_title = ""
+  
   if bFixed_main_title:
     main_title = sys.argv[2]
   elif aEval[2]:
-      main_title = eval(sys.argv[2])
+    main_title = eval(sys.argv[2]) # add .text at the end of your eval selector yourself if it's a html element
+    if isinstance(main_title, list) == True:
+      main_title = main_title[depth if len(main_title) > depth else 0]
   elif not(bDefault_main_title) and (mt_l := len(main_title := item.select(sys.argv[2]))) != 0:
     main_title = main_title[depth if mt_l > depth else 0].text # not sure if we should look for more main titles?
-  else:
+  elif found_link:
     main_title = found_link.text # use the link's text
     #main_title = item.text # use all the text inside - bad idea
-
-  addon_title = ""
+  else:
+    main_title = ""
+    #raise(ValueError("Title & Link were not found - can't do anything now, please adjust your Title selector: " + sys.argv[2]))
+    global found_items_bad_t
+    found_items_bad_t += 1
+    return
+      
   if bFixed_addon_title:
-      addon_title = sys.argv[5]
+    addon_title = sys.argv[5]
   elif not(bDefault_addon_title):
     if aEval[5]:
-      addon_title = eval(sys.argv[5])
+      addon_title = eval(sys.argv[5]) # add .text at the end of your eval selector yourself if it's a html element
+      if isinstance(addon_title, list) == True:
+        addon_title = addon_title[depth] # we need all the addon titles
     elif len(addon_title := item.select(sys.argv[5])) > depth:
       addon_title = addon_title[depth].text
     else:
       addon_title = found_link.text
-  elif bFixed_main_title or bMulti_enabled: # enable addon title by default for these options
+  elif bFixed_main_title or (bMulti_enabled and found_link): # enable addon title by default for these options
     addon_title = found_link.text
+  else:
+    addon_title = ""
   #raise(ValueError(addon_title)) # lets see what we've found?
-
+  
   item_title = main_title + (" - " if addon_title != "" else "") + addon_title
-
+  
   if bComment_fixed:
-    item_description = str(sys.argv[3])
+    item_description = sys.argv[3]
   elif aEval[3]:
     item_description = eval(sys.argv[3])
+    if isinstance(item_description, list) == True:
+      item_description = item_description[depth if len(item_description) > depth else 0]
   elif not(bDefault_comment) and (desc_l := len(tDescr := item.select(sys.argv[3]))) != 0:
     item_description = str(tDescr[depth if desc_l > depth else 0]) # keep html, also use 1st found if none further
     #item_description = item_description.replace('<', '≤').replace('&', '＆') # don't keep html
@@ -78,12 +101,21 @@ def css_to_rss(item, depth):
     item_description = str(item) # use everything inside found item
 
   item_date = ""
+  DateCurEl = ""
   if bFind_date:
     if ((tDate := eval(sys.argv[6])) if aEval[6] else (date_l := len(tDate := item.select(sys.argv[6])))) != 0:
       if aEval[6]:
-        DateCurEl = tDate
-      else:
-        DateCurEl = tDate[depth if date_l > depth else 0]
+        if isinstance(tDate, list) == False:
+          DateCurEl = tDate
+        else:
+          date_l = len(tDate)
+      
+      if DateCurEl == "":
+        if date_l > depth:
+          DateCurEl = tDate[depth]
+        else:
+          DateCurEl = "no Date element found for THIS item (there are less date elements found than total items)"
+      
       if type(DateCurEl) == str:
         item_date = DateCurEl
       else:
@@ -209,6 +241,7 @@ else:
 found_items = soup.select(item_selector)
 found_items_n = len(found_items)
 found_items_bad_n = 0
+found_items_bad_t = 0
 found_items_wo_dates = 0
 found_items_w_bad_dates = 0
 
@@ -219,6 +252,8 @@ if found_items_n != 0:
     css_to_rss(item, 0)
   if found_items_bad_n != 0:
     description_addon += ", Found items with NO Link: " + str(found_items_bad_n)
+  if found_items_bad_t != 0:
+    description_addon += ", Found items with NO Title: " + str(found_items_bad_t)
   if found_items_wo_dates != 0:
     description_addon += ", Found no Date item for: " + str(found_items_wo_dates)
   if found_items_w_bad_dates != 0:
